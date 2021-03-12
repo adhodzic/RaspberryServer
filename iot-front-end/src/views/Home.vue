@@ -1,18 +1,33 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1 v-if="temp && date">Temperature: {{temp}} => Date: {{date}}</h1>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
-
+import axios from 'axios';
+import moment from 'moment'
 export default {
   name: 'Home',
-  components: {
-    HelloWorld
-  }
+  data() {
+    return {
+      temp: null,
+      date: null
+    }
+  },
+  methods: {
+    async getTemp(){
+      let res = await axios.get('http://192.168.5.19:8080/api/temp');
+      console.log(res.data);
+      this.temp = res.data.temp.split(":")[0];
+      this.date = moment.unix(res.data.temp.split(":")[1]).format("DD/MM/YYYY HH:mm:ss");
+    }
+  },
+  mounted() {
+    setInterval(()=>{
+      this.getTemp();
+    }, 5000);
+  },
 }
 </script>
