@@ -360,7 +360,7 @@ void CC1100::wakeup(void)
 //-----------------------------[end]--------------------------------------------
 
 //---------------------[CC1100 set debug level]---------------------------------
-uint8_t CC1100::set_debug_level(uint8_t set_debug_level = 1)  //default ON
+uint8_t CC1100::set_debug_level(uint8_t set_debug_level = 0)  //default ON
 {
     debug_level = set_debug_level;        //set debug level of CC1101 outputs
 

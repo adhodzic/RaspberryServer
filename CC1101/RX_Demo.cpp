@@ -159,7 +159,6 @@ int main(int argc, char *argv[]) {
 		if (cc1100.packet_available())		 //checks if a packed is available
 		{
 		  t = std::to_string(time(NULL));
-		  std::cout<<t<<endl;
 		  cc1100.get_payload(Rx_fifo, pktlen, rx_addr, sender, rssi_dbm, lqi); //stores the payload data to Rx_fifo
 		  myfile.open ("example.txt");
 		  myfile << (int)Rx_fifo[3];
