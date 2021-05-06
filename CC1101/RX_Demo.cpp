@@ -152,6 +152,8 @@ int main(int argc, char *argv[]) {
         cc1100.show_register_settings();
 
 	cc1100.receive();
+
+	int lastAddr;
 	//------------------------- Main Loop ------------------------
 	for (;;) {
 		delay(1);                            //delay to reduce system load
@@ -160,8 +162,14 @@ int main(int argc, char *argv[]) {
 		{
 		  t = std::to_string(time(NULL));
 		  cc1100.get_payload(Rx_fifo, pktlen, rx_addr, sender, rssi_dbm, lqi); //stores the payload data to Rx_fifo
-		  myfile.open ("example.txt");
+		  myfile.open ("sensor" + to_string((int)Rx_fifo[5]) +".txt");
 		  myfile << (int)Rx_fifo[3];
+		  myfile << ':';
+		  myfile << (int)Rx_fifo[4];
+		  myfile << ':';
+		  myfile << (int)Rx_fifo[5];
+		  myfile << ':';
+		  myfile << (int)rssi_dbm;
 		  myfile << ':';
 		  myfile << t;
 		  myfile.close();
