@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const fs = require('fs');
+const fsPromise = require('fs').promises;
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -18,9 +19,9 @@ mongoose.connect(process.env.MONGO, {useNewUrlParser: true, useUnifiedTopology: 
 const Log = mongoose.model('Log', { temp: Number, hum: Number, addr: Number,sig: Number, unix: Number, db: Number });
 
 setInterval(()=>{
+  var filteredFiles = [];
   const dir = '../CC1101/';
   const files = fs.readdirSync(dir)
-  let filteredFiles = [];
   for (const file of files) {
     if(file.includes("sensor")){
       filteredFiles.push(file);
@@ -56,14 +57,37 @@ setInterval(()=>{
     })
   })
 },5000)
+const getValues = async filteredFiles =>{
+  return Promise.all(
+    filteredFiles.map(f => fsPromise.readFile(`../CC1101/${f}`, "utf-8"))
+  )
+}
 app.use(express.static(path.join('/home/pi/Desktop/Server/', 'iot-front-end/dist'))); //  "public" off of current is root
-app.get('/api/temp', (req, res)=>{
-  Log.find().sort({ _id: -1 }).limit(1).exec((err,result)=>{
-    if(err){
-      res.status(500);
+app.get('/api/temp', async (req, res)=>{
+  var sensorArr = [];
+  let sensor;
+  let filteredFiles = [];
+  const dir = '../CC1101/';
+  const files = fs.readdirSync(dir)
+  for (const file of files) {
+    if(file.includes("sensor")){
+      filteredFiles.push(file);
     }
-    res.json(result[0]);
-  })      
+  }
+  let values = await getValues(filteredFiles) 
+  
+  for(v of values){
+    sensor = {
+      temp: parseInt(v.split(":")[0]),
+      hum: parseInt(v.split(":")[1]),
+      addr: parseInt(v.split(":")[2]),
+      sig: parseInt(v.split(":")[3]),
+      unix: v.split(":")[4],
+    }
+    sensorArr.push(sensor);
+  }
+
+  res.json(sensorArr)
 })
 app.get('/api/daily', (req, res)=>{
   let n = Math.round(Date.now()/1000);
@@ -126,5 +150,5 @@ let sInterval = hInterval * 60 * 60;
   })      
 })
 
-app.listen(8080);
+app.listen(8081);
 console.log('Listening on port 8080');
