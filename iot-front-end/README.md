@@ -1,4 +1,4 @@
-# iot-front-end
+# client
 
 ## Project setup
 ```
