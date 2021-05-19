@@ -21,7 +21,6 @@ export default {
  watch: {
     change () {
         this.$data._chart.update()
-        console.log("updated")
     }
   },
   mounted () {

@@ -1,31 +1,36 @@
 <template>
   <div id="app">
-    <line-chart
+    <!--<line-chart
       v-if="loaded"
       :chartData="chartData"
       :options="options"
       :change="change"
-    />
-    <sensor
-      class="sensor-list"
-      v-bind:key="sensorData.unix"
-      v-for="sensorData in sensors"
-      :sensorData="sensorData"
-    />
+    />-->
 
-    <h2>Profit Euro: {{ ether }} EUR</h2>
-    <h2>Profit Kuna:{{ ether * 7.55 }} HRK</h2>
+    <!--<h4>Profit Euro: {{ ether }} EUR</h4>
+    <h4>Profit Kuna:{{ ether * 7.55 }} HRK</h4>-->
+
+    <div class="sensor-list">
+      <h2>Sensors</h2>
+      <sensor
+          class="sensor"
+          v-bind:key="sensorData.addr"
+          v-for="sensorData in sensors"
+          :sensorData="sensorData"
+        />
+    </div>
+
   </div>
 </template>
 
 <script>
 import Sensor from "./components/Sensor";
-import LineChart from "./components/Chart";
+//import LineChart from "./components/Chart";
 import axios from "axios";
 import moment from "moment";
 export default {
   name: "App",
-  components: { LineChart, Sensor },
+  components: { /*LineChart,*/ Sensor },
   data: () => ({
     ether: null,
     loaded: false,
@@ -90,9 +95,7 @@ export default {
     async getSensors() {
       const response = await axios.get("http://raspberrypitemp.ddns.net:8080/api/temp");
       let sensors = response.data;
-      console.log(sensors);
-      this.sensors = [];
-      this.sensors.push(sensors);
+      this.sensors = sensors;
     },
     transformData(data) {
       let lab = [];
@@ -111,7 +114,6 @@ export default {
       let eur = price.data["EUR"];
       eur = eur * 0.21388604;
       this.ether = eur - 235;
-      console.log(eur);
     },
   },
   async mounted() {
@@ -125,7 +127,7 @@ export default {
       await self.getData();
       await self.getSensors();
       self.change = !self.change;
-    }, 3000);
+    }, 6000);
   },
 };
 </script>
@@ -139,4 +141,23 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+.sensor{
+  background-color: #b83cff;
+  border-radius: 10px;
+  margin: 5px;
+}
+.sensor-list {
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(241, 207, 251);
+  border-radius: 10px;
+}
+
+.sensor-list h2{
+  margin-left: 5%;
+  align-self: flex-start;
+  color: #9e00fa;
+  text-shadow: 1px 1px 10px rgb(255, 2, 255);
+}
+
 </style>
