@@ -19,7 +19,12 @@
           :sensorData="sensorData"
         />
     </div>
-
+    <h1>Ado</h1>
+    <h3>Profit Euro: {{ ether }} EUR</h3>
+    <h3>Profit Kuna:{{ ether * 7.55 }} HRK</h3>
+    <h1>Deni</h1>
+    <h3>Ether u Euro: {{ ether_deni }} EUR</h3>
+    <h3>Ether u Kunu:{{ ether_deni * 7.55 }} HRK</h3>
   </div>
 </template>
 
@@ -33,6 +38,7 @@ export default {
   components: { /*LineChart,*/ Sensor },
   data: () => ({
     ether: null,
+    ether_deni: null,
     loaded: false,
     change: false,
     sensors: [],
@@ -112,8 +118,11 @@ export default {
         "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=EUR"
       );
       let eur = price.data["EUR"];
+      let eurD = price.data["EUR"];
       eur = eur * 0.21388604;
+      eurD = eurD * 0.13629740;
       this.ether = eur - 235;
+      this.ether_deni = eurD;
     },
   },
   async mounted() {

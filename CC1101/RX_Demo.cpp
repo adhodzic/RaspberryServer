@@ -162,18 +162,19 @@ int main(int argc, char *argv[]) {
 		{
 		  t = std::to_string(time(NULL));
 		  cc1100.get_payload(Rx_fifo, pktlen, rx_addr, sender, rssi_dbm, lqi); //stores the payload data to Rx_fifo
-		  myfile.open ("sensor" + to_string((int)Rx_fifo[5]) +".txt");
-		  myfile << (int)Rx_fifo[3];
-		  myfile << ':';
-		  myfile << (int)Rx_fifo[4];
-		  myfile << ':';
-		  myfile << (int)Rx_fifo[5];
-		  myfile << ':';
-		  myfile << (int)rssi_dbm;
-		  myfile << ':';
-		  myfile << t;
-		  myfile.close();
-		  
+		  if((int)pktlen == 6 && (int)Rx_fifo[0] == 6 && (int)Rx_fifo[1] == 3 && (int)Rx_fifo[2] == 0){
+			myfile.open ("sensor" + to_string((int)Rx_fifo[5]) +".txt");
+			myfile << (int)Rx_fifo[3];
+			myfile << ':';
+			myfile << (int)Rx_fifo[4];
+			myfile << ':';
+			myfile << (int)Rx_fifo[5];
+			myfile << ':';
+			myfile << (int)lqi;
+			myfile << ':';
+			myfile << t;
+			myfile.close();
+		  }
 		}
 	}
 	return 0;
