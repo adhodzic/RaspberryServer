@@ -1,33 +1,34 @@
 <template>
   <div id="app">
-    <line-chart
+   <!--<line-chart
       v-if="loaded"
       :chartData="chartData"
       :options="options"
       :change="change"
-    />
-    <sensor
-      class="sensor-list"
-      v-bind:key="sensorData.unix"
-      v-for="sensorData in sensors"
-      :sensorData="sensorData"
-    />
+    />-->
+    <Sensor v-bind:key="sensorData.addr" v-for="sensorData in sensors" :sensorData = sensorData />
 
-    <h2>Profit Euro: {{ ether }} EUR</h2>
-    <h2>Profit Kuna:{{ ether * 7.55 }} HRK</h2>
+
+    <h1>Ado</h1>
+    <h3>Profit Euro: {{ ether }} EUR</h3>
+    <h3>Profit Kuna:{{ ether * 7.55 }} HRK</h3>
+    <h1>Deni</h1>
+    <h3>Ether u Euro: {{ ether_deni }} EUR</h3>
+    <h3>Ether u Kunu:{{ ether_deni * 7.55 }} HRK</h3>
   </div>
 </template>
 
 <script>
 import Sensor from "./components/Sensor";
-import LineChart from "./components/Chart";
+//import LineChart from "./components/Chart";
 import axios from "axios";
 import moment from "moment";
 export default {
   name: "App",
-  components: { LineChart, Sensor },
+  components: { /*LineChart,*/ Sensor },
   data: () => ({
     ether: null,
+    ether_deni: null,
     loaded: false,
     change: false,
     sensors: [],
@@ -92,7 +93,7 @@ export default {
       let sensors = response.data;
       console.log(sensors);
       this.sensors = [];
-      this.sensors.push(sensors);
+      this.sensors = sensors;
     },
     transformData(data) {
       let lab = [];
@@ -109,9 +110,11 @@ export default {
         "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=EUR"
       );
       let eur = price.data["EUR"];
+      let eurD = price.data["EUR"];
       eur = eur * 0.21388604;
+      eurD = eurD * 0.13629740;
       this.ether = eur - 235;
-      console.log(eur);
+      this.ether_deni = eurD;
     },
   },
   async mounted() {
@@ -125,7 +128,7 @@ export default {
       await self.getData();
       await self.getSensors();
       self.change = !self.change;
-    }, 3000);
+    }, 5000);
   },
 };
 </script>

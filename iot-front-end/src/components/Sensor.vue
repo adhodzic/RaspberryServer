@@ -1,6 +1,6 @@
 <template>
-  <div class="sensor-template">
-    <p>{{ sensorData.temp }}</p>
+  <div class="sensor">
+    <p>{{ sensorData }}</p>
   </div>
 </template>
 
@@ -16,7 +16,15 @@ export default {
   data() {
     return {};
   },
+  mounted() {
+    console.log(this.sensorData);
+  }
 };
 </script>
 
-<style></style>
+<style>
+  .sensor{
+    display: flex;
+    flex-direction: row;
+  }
+</style>
