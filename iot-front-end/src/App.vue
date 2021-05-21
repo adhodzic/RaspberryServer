@@ -128,15 +128,13 @@ export default {
   async mounted() {
     this.loaded = false;
     await this.getEther();
-    await this.getData();
     await this.getSensors();
     let self = this;
     setInterval(async function () {
       await self.getEther();
-      await self.getData();
       await self.getSensors();
       self.change = !self.change;
-    }, 6000);
+    }, 10000);
   },
 };
 </script>
@@ -160,6 +158,7 @@ export default {
   flex-direction: column;
   background-color: rgb(241, 207, 251);
   border-radius: 10px;
+  width: 50%;
 }
 
 .sensor-list h2{
