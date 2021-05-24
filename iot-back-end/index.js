@@ -84,7 +84,9 @@ app.get('/api/temp', async (req, res)=>{
       sig: parseInt(v.split(":")[3]),
       unix: v.split(":")[4],
     }
-    sensorArr.push(sensor);
+    if((Date.now() / 1000) - sensor.unix < 600000){
+      sensorArr.push(sensor);
+    }
   }
 
   res.json(sensorArr)
