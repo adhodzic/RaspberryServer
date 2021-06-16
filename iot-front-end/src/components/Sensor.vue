@@ -33,7 +33,8 @@ export default {
       last: "...",
       sensor_enum: {
         5: 'Home',
-        6: 'Garden'
+        6: 'Garden',
+        7: 'Hallway'
       },
       isCollapsed: false
     };

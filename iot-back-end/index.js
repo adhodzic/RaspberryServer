@@ -6,6 +6,7 @@ const fsPromise = require('fs').promises;
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
 var corsOptions = {
   origin: '*',
   optionsSuccessStatus: 200,
@@ -13,10 +14,11 @@ var corsOptions = {
 
 dotenv.config();
 app.use(cors(corsOptions));
+app.use(express.json())
 
 mongoose.connect(process.env.MONGO, {useNewUrlParser: true, useUnifiedTopology: true});
 
-const Log = mongoose.model('Log', { temp: Number, hum: Number, addr: Number,sig: Number, unix: Number, db: Number });
+const Log = mongoose.model('Log', { temp: Number, hum: Number, name: String, addr: Number,sig: Number, unix: Number });
 
 setInterval(()=>{
   var filteredFiles = [];
@@ -40,20 +42,15 @@ setInterval(()=>{
         addr: parseInt(data.split(":")[2]),
         sig: parseInt(data.split(":")[3]),
         unix: data.split(":")[4],
-        db: mongoose.connection.readyState
+        db: mongoose.connection.readyStrate
       }
-      Log.find({addr: parseInt(log.addr)}).sort({ _id: -1 }).limit(1).exec((err,res)=>{
-        if(res.length === 0){
-          const nLog = new Log(log);
-          nLog.save();
-          return
+
+      Log.updateOne( {addr: log.addr}, log, { upsert : true }, (err, res)=>{
+        if(err){
+          console.log("Error: ", err);
+          return;
         }
-        if(res.length > 0 && res[0].temp != parseInt(log.temp)){
-          console.log("saved")
-          const nLog = new Log(log);
-          nLog.save();
-        }
-      })
+      });
     })
   })
 },5000)
@@ -64,93 +61,31 @@ const getValues = async filteredFiles =>{
 }
 app.use(express.static(path.join('/home/pi/Desktop/Server/', 'iot-front-end/dist'))); //  "public" off of current is root
 app.get('/api/temp', async (req, res)=>{
-  var sensorArr = [];
-  let sensor;
-  let filteredFiles = [];
-  const dir = '../CC1101/';
-  const files = fs.readdirSync(dir)
-  for (const file of files) {
-    if(file.includes("sensor")){
-      filteredFiles.push(file);
-    }
-  }
-  let values = await getValues(filteredFiles) 
-  
-  for(v of values){
-    sensor = {
-      temp: parseInt(v.split(":")[0]),
-      hum: parseInt(v.split(":")[1]),
-      addr: parseInt(v.split(":")[2]),
-      sig: parseInt(v.split(":")[3]),
-      unix: v.split(":")[4],
-    }
-    if((Date.now() / 1000) - sensor.unix < 600000){
-      sensorArr.push(sensor);
-    }
-  }
-
-  res.json(sensorArr)
-})
-app.get('/api/daily', (req, res)=>{
-  let n = Math.round(Date.now()/1000);
-  let sInterval = 6 * 60 * 60;
-  let interval = n - sInterval;
-  Log.find({ unix: { $gte: interval, $lte: n} }, {_id: 0, db: 0, __v: 0}).sort({ unix: 1,}).exec((err,result)=>{
+  let time = (Date.now() / 1000) - 60 * 5
+  Log.find({unix: {$gte: time}},(err, docs)=>{
     if(err){
+      console.log(err);
       res.status(500);
-      return
+      return;
     }
-    res.status(200).json(result);
+    res.json(docs);
     return
-  });
-});
-app.get('/api/graph', (req, res)=>{
-  let n = Math.round(Date.now()/1000);
-let hInterval = req.query.interval;
-let sampleT = req.query.sample;
-if(!(hInterval >= 0 && hInterval <= 24)){
-  res.status(400).send("Interval out of the bounds");
-  return
-}
-if(sampleT == 0){
-  res.status(400).send("Sample out of the bounds");
-  return
-}
-
-let sInterval = hInterval * 60 * 60;
-  let interval = n - sInterval;
-  Log.find({ unix: { $gte: interval, $lte: n} }, {_id: 0, db: 0, __v: 0}).sort({ unix: 1,}).exec((err2,result2)=>{
-    if(err2){
-      res.status(500);
-    }
-    let arr = new Array(sInterval/sampleT);
-    let index = 0;
-    console.log(n - sInterval, result2[0].unix)
-    if(index < 0){
-        res.status(200).send("No Data")
-        return
-    }
-    let br = 0;
-    let j = 0;
-    let temp = result2[index];
-    for(let i = sInterval; i > 0; i--){
-      if(n-i == result2[index].unix){ 
-          //arr[j] = result2[index];
-          temp = result2[index]
-          if(index < result2.length-1) index++;
-      }
-      if(i%sampleT==0){
-          br++;
-          arr[j] = {
-              temp: temp.temp,
-              unix: n-i
-          }
-          j++;
-      }
-    }
-    res.json(arr);
-  })      
+  })
 })
 
+app.post('/api/update-name', async (req, res)=>{
+  let {id, name} = req.body;
+  console.log(id, name);
+  let mId = mongoose.Types.ObjectId(id);
+  Log.updateOne( {_id: mId}, {name: name}, (err, resu)=>{
+    if(err){
+      console.log("Error: ", err);
+      res.status(500).send(err);
+    }
+    console.log(resu.MatchedCount);
+  });
+  res.status(200).send("Updated");
+  return
+})
 app.listen(8080);
 console.log('Listening on port 8080');
